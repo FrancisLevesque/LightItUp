@@ -17,37 +17,58 @@ class LightUpView(context: Context, val size: Point) : SurfaceView(context), Run
     private val onColour = Color.argb(255, 200, 200, 0)
     private var gameWon = false
 
-    private val tiles = ArrayList<Tile>()
+    private lateinit var tiles: Array<Array<Tile>>
 
     companion object {
-        val tileRows = 5
-        val tileColumns = 5
+        const val maxTileRows = 5
+        const val maxTileColumns = 5
+        const val maxTileRowSize = maxTileRows - 1
+        const val maxTileColumnSize = maxTileColumns - 1
+    }
+
+    private fun setupGame() {
+        tiles = Array(maxTileRows) { row ->
+            Array(maxTileColumns) { column ->
+                Tile(row, column, size.x, size.y)
+            }
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_UP -> {
-                for (tile in tiles) {
-                    if (event.x > tile.position.left &&
-                        event.x < tile.position.right &&
-                        event.y > tile.position.top &&
-                        event.y < tile.position.bottom) {
-                        tile.update()
-                        break
+                for (tileRow in tiles) {
+                    for (tile in tileRow) {
+                        val row = tile.row
+                        val column = tile.column
+                        val tile = tiles[row][column]
+
+                        if (event.x > tile.position.left &&
+                            event.x < tile.position.right &&
+                            event.y > tile.position.top &&
+                            event.y < tile.position.bottom) {
+                            tile.update()
+
+                            if (row > 0) {
+                                tiles[row - 1][column].update()
+                            }
+                            if (row < maxTileRowSize) {
+                                tiles[row + 1][column].update()
+                            }
+                            if (column > 0) {
+                                tiles[row][column - 1].update()
+                            }
+                            if (column < maxTileColumnSize) {
+                                tiles[row][column + 1].update()
+                            }
+                            break
+                        }
                     }
                 }
             }
         }
         return true
-    }
-
-    private fun setupGame() {
-        for (column in 1..tileColumns) {
-            for (row in 1..tileRows) {
-                tiles.add(Tile(column, row, size.x))
-            }
-        }
     }
 
     private fun update() {
@@ -62,13 +83,16 @@ class LightUpView(context: Context, val size: Point) : SurfaceView(context), Run
             canvas.drawColor(Color.argb(255, 0, 0, 0))
             paint.color = Color.argb(255, 80, 80, 80)
 
-            for (tile in tiles) {
-                if (tile.isLightOn) {
-                    paint.color = onColour
-                } else {
-                    paint.color = offColour
+            for (tileRow in tiles) {
+                for (tile in tileRow) {
+                    val tile = tiles[tile.row][tile.column]
+                    if (tile.isLightOn) {
+                        paint.color = onColour
+                    } else {
+                        paint.color = offColour
+                    }
+                    canvas.drawRect(tile.position, paint)
                 }
-                canvas.drawRect(tile.position, paint)
             }
             holder.unlockCanvasAndPost(canvas)
         }
