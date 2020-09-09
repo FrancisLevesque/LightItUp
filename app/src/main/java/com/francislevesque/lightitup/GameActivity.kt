@@ -11,10 +11,11 @@ class GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val display = windowManager.defaultDisplay
-        var size = Point()
-        display.getSize(size)
+        var screenSize = Point()
+        display.getSize(screenSize)
+        val gameSize = intent.getIntExtra(EXTRA_LEVEL_SIZE, 3)
 
-        lightUpView = LightUpView(this, size)
+        lightUpView = LightUpView(this, screenSize, gameSize)
         setContentView(lightUpView)
     }
 

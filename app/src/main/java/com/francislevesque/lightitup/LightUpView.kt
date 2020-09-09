@@ -9,7 +9,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceView
 
-class LightUpView(context: Context, val size: Point) : SurfaceView(context), Runnable {
+class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : SurfaceView(context), Runnable {
     private val gameThread = Thread(this)
     private var canvas: Canvas = Canvas()
     private var paint: Paint = Paint()
@@ -19,17 +19,10 @@ class LightUpView(context: Context, val size: Point) : SurfaceView(context), Run
 
     private lateinit var tiles: Array<Array<Tile>>
 
-    companion object {
-        const val maxTileRows = 5
-        const val maxTileColumns = 5
-        const val maxTileRowSize = maxTileRows - 1
-        const val maxTileColumnSize = maxTileColumns - 1
-    }
-
     private fun setupGame() {
-        tiles = Array(maxTileRows) { row ->
-            Array(maxTileColumns) { column ->
-                Tile(row, column, size.x, size.y)
+        tiles = Array(gameSize) { row ->
+            Array(gameSize) { column ->
+                Tile(gameSize, row, column, screenSize.x, screenSize.y)
             }
         }
     }
@@ -53,13 +46,13 @@ class LightUpView(context: Context, val size: Point) : SurfaceView(context), Run
                             if (row > 0) {
                                 tiles[row - 1][column].update()
                             }
-                            if (row < maxTileRowSize) {
+                            if (row < gameSize - 1) {
                                 tiles[row + 1][column].update()
                             }
                             if (column > 0) {
                                 tiles[row][column - 1].update()
                             }
-                            if (column < maxTileColumnSize) {
+                            if (column < gameSize - 1) {
                                 tiles[row][column + 1].update()
                             }
                             break

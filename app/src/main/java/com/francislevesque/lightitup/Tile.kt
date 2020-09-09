@@ -2,10 +2,10 @@ package com.francislevesque.lightitup
 
 import android.graphics.RectF
 
-class Tile(val row: Int, val column: Int, screenWidth: Int, screenHeight: Int) {
+class Tile(val gameSize: Int, val row: Int, val column: Int, screenWidth: Int, screenHeight: Int) {
     // Create space for required tiles plus an extra
     // The extra space is divided and used for padding between tiles
-    val numUnits = LightUpView.maxTileRows + 1
+    val numUnits = gameSize + 1
     val unitLength = screenWidth / numUnits
     val padding = unitLength / numUnits
     // TODO: Add and enforce check to make sure we're not drawing off the screen
