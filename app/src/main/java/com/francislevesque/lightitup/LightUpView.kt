@@ -8,6 +8,7 @@ import android.graphics.Point
 import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceView
+import kotlin.random.Random
 
 class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : SurfaceView(context), Runnable {
     private val gameThread = Thread(this)
@@ -17,13 +18,18 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     private val onColour = Color.argb(255, 200, 200, 0)
     private var gameOn = false
     private var gameWon = false
+    private var moveCounter = 0
 
     private lateinit var tiles: Array<Array<Tile>>
 
     private fun setupGame() {
+        gameWon = false
+        moveCounter = 0
+        val chanceList = (0..2017)
         tiles = Array(gameSize) { row ->
             Array(gameSize) { column ->
-                Tile(gameSize, row, column, screenSize.x, screenSize.y)
+                val chance = (chanceList.random() % 3 == 0)
+                Tile(chance, gameSize, row, column, screenSize.x, screenSize.y)
             }
         }
     }
@@ -32,6 +38,7 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
         when (event.action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_UP -> {
+                moveCounter++
                 for (tileRow in tiles) {
                     for (tile in tileRow) {
                         val row = tile.row
@@ -61,6 +68,7 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
                     }
                 }
             }
+
         }
         return true
     }
