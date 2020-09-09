@@ -19,13 +19,13 @@ class GameActivity : AppCompatActivity() {
         setContentView(lightUpView)
     }
 
-    override fun onPause() {
-        super.onPause()
-        lightUpView.pause()
-    }
-
     override fun onResume() {
         super.onResume()
         lightUpView.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        lightUpView.pause()
     }
 }

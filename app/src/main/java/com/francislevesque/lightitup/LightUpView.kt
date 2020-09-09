@@ -15,6 +15,7 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     private var paint: Paint = Paint()
     private val offColour = Color.argb(255, 80, 80, 80)
     private val onColour = Color.argb(255, 200, 200, 0)
+    private var gameOn = false
     private var gameWon = false
 
     private lateinit var tiles: Array<Array<Tile>>
@@ -92,22 +93,24 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     }
 
     override fun run() {
-        while(true) {
+        while(gameOn) {
             update()
             draw()
         }
     }
 
+    fun resume() {
+        setupGame()
+        gameOn = true
+        gameThread.start()
+    }
+
     fun pause() {
+        gameOn = false
         try {
             gameThread.join()
         }  catch (e: InterruptedException) {
             Log.e("ERROR:", "Failure joining game thread")
         }
-    }
-
-    fun resume() {
-        setupGame()
-        gameThread.start()
     }
 }
