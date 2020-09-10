@@ -20,6 +20,7 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     private var gameWon = false
     private var bestScore = 0
     private var moveCounter = 0
+    private var allTilesOn = false
 
     private val textX = screenSize.x / 20f
     private val textY = screenSize.y / 20f
@@ -28,10 +29,10 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     private lateinit var tiles: Array<Array<Tile>>
 
     private fun setupGame() {
-        println(" =========== SCREEN: (${screenSize.x}, ${screenSize.y})")
-        println(" =========== TEXT: ($textX, $textY)")
         gameWon = false
         moveCounter = 0
+        allTilesOn = false
+
         val chanceList = (0..2017)
         tiles = Array(gameSize) { row ->
             Array(gameSize) { column ->
@@ -50,7 +51,6 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
                     for (tile in tileRow) {
                         val row = tile.row
                         val column = tile.column
-                        val tile = tiles[row][column]
 
                         if (event.x > tile.position.left &&
                             event.x < tile.position.right &&
@@ -74,16 +74,22 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
                         }
                     }
                 }
-            }
+                allTilesOn = true
+                for (tileRow in tiles) {
+                    for (tile in tileRow) {
+                        if(!tile.isLightOn) {
+                            allTilesOn = false
+                        }
+                    }
+                }
 
+                if (allTilesOn) {
+                    gameOn = false
+                    gameWon = true
+                }
+            }
         }
         return true
-    }
-
-    private fun update() {
-        if (gameWon) {
-            // show a win screen or something
-        }
     }
 
     private fun draw() {
@@ -103,16 +109,18 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
             }
             paint.color = Color.argb(255, 255, 255, 255)
             paint.textSize = textSize
-
             canvas.drawText("Best Score: $bestScore", textX, textY, paint)
             canvas.drawText("Number of moves used: $moveCounter", textX, textY + textSize + 20f, paint)
+            if (gameWon) {
+                paint.textSize = 80f
+                canvas.drawText("YOU WIN!", screenSize.x / 2f, screenSize.y / 2f, paint)
+            }
             holder.unlockCanvasAndPost(canvas)
         }
     }
 
     override fun run() {
         while(gameOn) {
-            update()
             draw()
         }
     }
