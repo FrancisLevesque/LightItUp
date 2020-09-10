@@ -1,6 +1,7 @@
 package com.francislevesque.lightitup
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -8,7 +9,6 @@ import android.graphics.Point
 import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceView
-import kotlin.random.Random
 
 class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : SurfaceView(context), Runnable {
     private val gameThread = Thread(this)
@@ -16,15 +16,20 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     private var paint: Paint = Paint()
     private val offColour = Color.argb(255, 80, 80, 80)
     private val onColour = Color.argb(255, 200, 200, 0)
-    private var gameOn = false
-    private var gameWon = false
-    private var bestScore = 0
-    private var moveCounter = 0
-    private var allTilesOn = false
-
     private val textX = screenSize.x / 20f
     private val textY = screenSize.y / 20f
-    private val textSize = 60f
+    private val textSize = 40f
+
+    private val prefs: SharedPreferences = context.getSharedPreferences(
+        "LightItUp", Context.MODE_PRIVATE
+    )
+    private var gameOn = false
+    private var gameWon = false
+    private var allTilesOn = false
+    private var moveCounter = 0
+    private var maxScore = 9999
+    private var currentRecordKey = "currentRecord$gameSize"
+    private var currentRecord = prefs.getInt(currentRecordKey, maxScore)
 
     private lateinit var tiles: Array<Array<Tile>>
 
@@ -46,7 +51,6 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
         when (event.action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_UP -> {
-                moveCounter++
                 for (tileRow in tiles) {
                     for (tile in tileRow) {
                         val row = tile.row
@@ -57,6 +61,7 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
                             event.y > tile.position.top &&
                             event.y < tile.position.bottom) {
                             tile.update()
+                            moveCounter++
 
                             if (row > 0) {
                                 tiles[row - 1][column].update()
@@ -84,8 +89,13 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
                 }
 
                 if (allTilesOn) {
-                    gameOn = false
                     gameWon = true
+                    if (moveCounter < currentRecord) {
+                        val editor = prefs.edit()
+                        editor.putInt(currentRecordKey, moveCounter)
+                        editor.apply()
+                    }
+                    gameOn = false
                 }
             }
         }
@@ -109,11 +119,14 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
             }
             paint.color = Color.argb(255, 255, 255, 255)
             paint.textSize = textSize
-            canvas.drawText("Best Score: $bestScore", textX, textY, paint)
+            if (currentRecord != maxScore) {
+                canvas.drawText("Current Record: $currentRecord", textX, textY, paint)
+            }
             canvas.drawText("Number of moves used: $moveCounter", textX, textY + textSize + 20f, paint)
             if (gameWon) {
-                paint.textSize = 80f
-                canvas.drawText("YOU WIN!", screenSize.x / 2f, screenSize.y / 2f, paint)
+                paint.textSize = 120f
+                paint.textAlign = Paint.Align.CENTER
+                canvas.drawText("YOU WIN!", screenSize.x / 2f, (screenSize.y / 8f) * 7f, paint)
             }
             holder.unlockCanvasAndPost(canvas)
         }
