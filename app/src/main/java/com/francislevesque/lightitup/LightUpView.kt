@@ -18,11 +18,18 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
     private val onColour = Color.argb(255, 200, 200, 0)
     private var gameOn = false
     private var gameWon = false
+    private var bestScore = 0
     private var moveCounter = 0
+
+    private val textX = screenSize.x / 20f
+    private val textY = screenSize.y / 20f
+    private val textSize = 60f
 
     private lateinit var tiles: Array<Array<Tile>>
 
     private fun setupGame() {
+        println(" =========== SCREEN: (${screenSize.x}, ${screenSize.y})")
+        println(" =========== TEXT: ($textX, $textY)")
         gameWon = false
         moveCounter = 0
         val chanceList = (0..2017)
@@ -83,8 +90,6 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
         if (holder.surface.isValid) {
             canvas = holder.lockCanvas()
             canvas.drawColor(Color.argb(255, 0, 0, 0))
-            paint.color = Color.argb(255, 80, 80, 80)
-
             for (tileRow in tiles) {
                 for (tile in tileRow) {
                     val tile = tiles[tile.row][tile.column]
@@ -96,6 +101,11 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
                     canvas.drawRect(tile.position, paint)
                 }
             }
+            paint.color = Color.argb(255, 255, 255, 255)
+            paint.textSize = textSize
+
+            canvas.drawText("Best Score: $bestScore", textX, textY, paint)
+            canvas.drawText("Number of moves used: $moveCounter", textX, textY + textSize + 20f, paint)
             holder.unlockCanvasAndPost(canvas)
         }
     }
