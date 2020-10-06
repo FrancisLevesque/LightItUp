@@ -38,11 +38,48 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
         moveCounter = 0
         allTilesOn = false
 
-        val chanceList = (0..2017)
         tiles = Array(gameSize) { row ->
             Array(gameSize) { column ->
-                val chance = (chanceList.random() % 3 == 0)
-                Tile(chance, gameSize, row, column, screenSize.x, screenSize.y)
+                Tile(true, gameSize, row, column, screenSize.x, screenSize.y)
+            }
+        }
+        val numberOfMoves = (gameSize..(2*gameSize))
+        val gameRange = (0..(gameSize - 1))
+        val xPosition = gameRange
+        val yPosition = gameRange
+        for (move in 0..numberOfMoves.random()) {
+            touchTile(xPosition.random(), yPosition.random())
+        }
+    }
+
+    private fun touchTile(row: Int, column: Int) {
+        tiles[row][column].update()
+        if (row > 0) {
+            tiles[row - 1][column].update()
+        }
+        if (row < gameSize - 1) {
+            tiles[row + 1][column].update()
+        }
+        if (column > 0) {
+            tiles[row][column - 1].update()
+        }
+        if (column < gameSize - 1) {
+            tiles[row][column + 1].update()
+        }
+    }
+
+    private fun updateTileIfTouched(x: Float, y: Float) {
+        for (tileRow in tiles) {
+            for (tile in tileRow) {
+                if (x > tile.position.left &&
+                    x < tile.position.right &&
+                    y > tile.position.top &&
+                    y < tile.position.bottom
+                ) {
+                    moveCounter++
+                    touchTile(tile.row, tile.column)
+                    break
+                }
             }
         }
     }
@@ -51,34 +88,7 @@ class LightUpView(context: Context, val screenSize: Point, val gameSize: Int) : 
         when (event.action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_POINTER_UP,
             MotionEvent.ACTION_UP -> {
-                for (tileRow in tiles) {
-                    for (tile in tileRow) {
-                        val row = tile.row
-                        val column = tile.column
-
-                        if (event.x > tile.position.left &&
-                            event.x < tile.position.right &&
-                            event.y > tile.position.top &&
-                            event.y < tile.position.bottom) {
-                            tile.update()
-                            moveCounter++
-
-                            if (row > 0) {
-                                tiles[row - 1][column].update()
-                            }
-                            if (row < gameSize - 1) {
-                                tiles[row + 1][column].update()
-                            }
-                            if (column > 0) {
-                                tiles[row][column - 1].update()
-                            }
-                            if (column < gameSize - 1) {
-                                tiles[row][column + 1].update()
-                            }
-                            break
-                        }
-                    }
-                }
+                updateTileIfTouched(event.x, event.y)
                 allTilesOn = true
                 for (tileRow in tiles) {
                     for (tile in tileRow) {
